@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=1100">
+  <meta charset="utf-8">
+  <!-- libs & font restent inchangés -->
+  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="../scripts/angular.js" charset="utf-8"></script>
+  <script src="../scripts/common.js" charset="utf-8"></script>
+  <link href="http://fonts.googleapis.com/css?family=Lato:100,200,300,400" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/style.css" type="text/css">
+
+  <!-- ← Nouveau : override orange → bleu -->
+  <style>
+    :root { --primary-color: #007BFF; }
+
+    /* Texte et bordures en bleu */
+    a, h1.title, h3.by-line, select, input:focus {
+      color: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+    }
+
+    /* Fond bleu UNIQUEMENT pour les boutons */
+    button,
+    input[type="submit"],
+    .btn {
+      background: var(--primary-color) !important;
+      color: #fff;
+    }
+
+    /* Conteneur du titre : plus de couleur de fond,
+       on aligne logo + texte proprement */
+    .title-region {
+      background: transparent !important;
+      display: flex;
+      align-items: center;
+      gap: 20px;              /* espace logo / texte */
+    }
+  </style>
+
+  <title>Effets des kernels</title>
+</head>
+
+<body ng-app="myApp" ng-controller="MainCtrl">
+  <!-- SECTION TITRE -->
+  <section class="title">
+    <div class="title-region">
+      <!-- ← Ajout du logo de l'école -->
+      <img src="logo.jpg" alt="Logo de mon école" style="height:100px">
+      <h2 class="title">Noyaux (kernels) CNN</h2>
+    </div>
+  </section>
+
+  <section>
+    <!-- EXPLICATION EN FRANÇAIS -->
+    <p>Un noyau d'image (ou kernel) est une petite matrice utilisée pour appliquer des effets comme ceux offerts par Photoshop ou Gimp : flou, renforcement, contour ou embossage. On les emploie aussi en apprentissage automatique pour l’<em>extraction de caractéristiques</em>, technique qui identifie les parties les plus importantes d’une image. Dans ce contexte, on parle plus généralement de « convolution » (voir : <a href="https://fr.wikipedia.org/wiki/R%C3%A9seau_de_neurones_convolutionnel">réseaux de neurones convolutionnels</a>).</p>
+
+    <p>Pour comprendre leur fonctionnement, commençons par observer une image en niveaux de gris. La matrice de gauche contient des valeurs de 0 à 255, chacune correspondant à la luminosité d’un pixel du visage. L’image grossie facilite la lecture ; la dernière vignette représente la taille réelle.</p>
+
+
+    <p>Pour chaque bloc 3×3 de pixels (à gauche), on multiplie chaque pixel par l’élément correspondant du noyau, puis on additionne. Le résultat devient un pixel de la nouvelle image (à droite). Survolez un pixel pour voir son calcul.</p>
+
+    <p>Un point subtil : que fait‑on sur les bords ? Le coin supérieur gauche n’a que trois voisins. On pourrait étendre les bords, mais ici on remplit en noir (valeur 0) pour garder la même taille.</p>
+
+    <p>Dans l’aire de jeu ci‑dessous, choisissez un noyau ou créez‑en un sur mesure. Vous pouvez aussi charger votre image ou utiliser la vidéo en direct si votre navigateur le permet.</p>
+    <div style="position:relative">
+      <div style="position:absolute; width:260px;height:260px; top:85px; left:65px">
+        <div ng-repeat="(idx,val) in kernel track by $id(idx)" style="width:33.33%;height:33.33%;float:left">
+          <input type="number" ng-model="kernel[idx]" min="-10" max="10" step="0.1"
+                 style="width:100%;height:100%;font-size:20px;text-align:center"
+                 ng-change="modifiedKernel()">
+        </div>
+      </div>
+      <div style="position:absolute; top:360px; left:145px">
+        <select ng-options="key as key for (key,value) in kernels" ng-model="selectedKernel"></select>
+      </div>
+      <kernel-playground></kernel-playground>
+    </div>
+
+    <!-- DESCRIPTIONS DES NOYAUX -->
+    <div ng-show="selectedKernel==='sharpen'">
+      <p>Le noyau <strong>sharpen</strong> accentue les différences de luminosité entre pixels adjacents, ce qui rend l’image plus nette.</p>
+    </div>
+    <div ng-show="selectedKernel==='blur'">
+      <p>Le noyau <strong>blur</strong> atténue ces différences, produisant un flou.</p>
+    </div>
+    <div ng-show="selectedKernel.indexOf('emboss')!==-1">
+      <p>Le noyau <strong>emboss</strong> (similaire à <strong>sobel</strong>) crée une illusion de relief en accentuant les contrastes dans une direction (ici du haut‑gauche vers le bas‑droit).</p>
+    </div>
+    <div ng-show="selectedKernel==='identity'">
+      <p>Le noyau <strong>identity</strong> ne modifie pas l’image. Ennuyeux !</p>
+    </div>
+    <div ng-show="selectedKernel==='custom'">
+      <p>Le noyau <strong>custom</strong> correspond à vos propres valeurs.</p>
+    </div>
+    <div ng-show="selectedKernel.indexOf('sobel')!==-1">
+      <p>Les noyaux <strong>sobel</strong> mettent en évidence les différences de luminosité dans une direction donnée.</p>
+    </div>
+    <div ng-show="selectedKernel==='outline'">
+      <p>Le noyau <strong>outline</strong> (ou « edge ») accentue les bords forts : un pixel voisin de pixels de même intensité reste noir, d’un pixel voisin de pixels très différents devient blanc.</p>
+    </div>
+
+    <p>Pour aller plus loin, consultez la documentation de Gimp sur les <a href="https://docs.gimp.org/3.0/en/gimp-filter-convolution-matrix.html">Image Kernels</a>. Sous Photoshop, utilisez Filtre → Autres → Personnalisé…</p>
+  </section>
+
+  <!-- scripts et Disqus restent inchangés -->
+  <script src="../scripts/exif.js" charset="utf-8"></script>
+  <script src="script.js"></script>
+</body>
+</html>
